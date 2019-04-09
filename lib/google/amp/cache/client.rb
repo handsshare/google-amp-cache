@@ -43,8 +43,7 @@ module Google::AMP::Cache
       sig = private_key.sign(DIGEST, api_path)
       signature = Base64.urlsafe_encode64(sig)
 
-      result = self.class.get("#{api_host}#{api_path}&amp_url_signature=#{signature}")
-      result.ok?
+      self.class.get("#{api_host}#{api_path}&amp_url_signature=#{signature}")
     end
 
     def short_content_type(type)
