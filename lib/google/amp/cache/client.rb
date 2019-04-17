@@ -5,7 +5,7 @@ require 'uri'
 module Google::AMP::Cache
   class Client
     include HTTParty
-    # base_uri 'https://acceleratedmobilepageurl.googleapis.com/v1'
+    base_uri 'https://acceleratedmobilepageurl.googleapis.com/v1'
 
     # UPDATE_CACHE_API_DOMAIN_SUFFIX = 'cdn.ampproject.org'
     # https://cdn.ampproject.org/caches.json
