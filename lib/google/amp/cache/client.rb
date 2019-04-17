@@ -7,7 +7,13 @@ module Google::AMP::Cache
     include HTTParty
     # base_uri 'https://acceleratedmobilepageurl.googleapis.com/v1'
 
-    UPDATE_CACHE_API_DOMAIN_SUFFIX = 'cdn.ampproject.org'
+    # UPDATE_CACHE_API_DOMAIN_SUFFIX = 'cdn.ampproject.org'
+    # https://cdn.ampproject.org/caches.json
+    UPDATE_CACHE_API_DOMAIN_SUFFIXES = [
+      'cdn.ampproject.org',
+      'amp.cloudflare.com',
+      'bing-amp.com'
+    ]
     DIGEST = OpenSSL::Digest::SHA256.new
 
     attr_reader :private_key, :google_api_key
@@ -33,17 +39,19 @@ module Google::AMP::Cache
       page_uri = URI.parse(url)
       subdomain = format_domain(page_uri.host)
 
-      api_host = URI.parse(["https://", subdomain, '.', UPDATE_CACHE_API_DOMAIN_SUFFIX].join)
-      params = {
-        amp_action: 'flush',
-        amp_ts: Time.now.to_i
-      }
+      UPDATE_CACHE_API_DOMAIN_SUFFIXES.each do |suffix|
+        api_host = URI.parse(["https://", subdomain, '.', suffix].join)
+        params = {
+          amp_action: 'flush',
+          amp_ts: Time.now.to_i
+        }
 
-      api_path = "/update-cache/#{short_content_type(content_type)}/#{'s/' if page_uri.scheme.match?('https')}#{page_uri.host}#{page_uri.path}?#{Rack::Utils.build_query(params)}"
-      sig = private_key.sign(DIGEST, api_path)
-      signature = Base64.urlsafe_encode64(sig)
+        api_path = "/update-cache/#{short_content_type(content_type)}/#{'s/' if page_uri.scheme.match?('https')}#{page_uri.host}#{page_uri.path}?#{Rack::Utils.build_query(params)}"
+        sig = private_key.sign(DIGEST, api_path)
+        signature = Base64.urlsafe_encode64(sig)
 
-      self.class.get("#{api_host}#{api_path}&amp_url_signature=#{signature}")
+        self.class.get("#{api_host}#{api_path}&amp_url_signature=#{signature}")
+      end      
     end
 
     def short_content_type(type)
