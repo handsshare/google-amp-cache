@@ -7,13 +7,6 @@ module Google::AMP::Cache
     include HTTParty
     base_uri 'https://acceleratedmobilepageurl.googleapis.com/v1'
 
-    # UPDATE_CACHE_API_DOMAIN_SUFFIX = 'cdn.ampproject.org'
-    # https://cdn.ampproject.org/caches.json
-    UPDATE_CACHE_API_DOMAIN_SUFFIXES = [
-      'cdn.ampproject.org',
-      'amp.cloudflare.com',
-      'bing-amp.com'
-    ]
     DIGEST = OpenSSL::Digest::SHA256.new
 
     attr_reader :private_key, :google_api_key
@@ -40,8 +33,12 @@ module Google::AMP::Cache
       subdomain = format_domain(page_uri.host)
 
       results = []
+      # UPDATE_CACHE_API_DOMAIN_SUFFIX = 'cdn.ampproject.org'
+      # https://cdn.ampproject.org/caches.json
+      update_cache_api_domain_suffixes = ['cdn.ampproject.org', 'bing-amp.com']
+      update_cache_api_domain_suffixes << 'amp.cloudflare.com' if ENV['GOOGLE_AMP_CACHE_USE_CLOUDFLARE'].present?
 
-      UPDATE_CACHE_API_DOMAIN_SUFFIXES.each do |suffix|
+      update_cache_api_domain_suffixes.each do |suffix|
         api_host = URI.parse(["https://", subdomain, '.', suffix].join)
         params = {
           amp_action: 'flush',
